@@ -6,9 +6,32 @@ An MCP Server to play with daily posts from your follows in Bluesky.
 
 Install this MCP Server with your MCP Client, such as Claude Desktop.
 
+For Claude Desktop, you can install this MCP Server by adding the following to your `~/Library/Application\ Support/Claude/claude_desktop_config.json` (on MacOS):
+
+```json
+{
+  "mcpServers": [
+    "bluesky-daily-mcp": {
+      "command": "node",
+      "args": ["/absolute/path/to/your/dist/index.js"]
+    }  ]
+}
+```
+
+Build the MCP Server:
+
+```bash
+npm install
+npm run build
+```
+
+Restart Claude Desktop to load up new MCP Server.
+
 ## Help for Contributors
 
-### Local Development with watch mode
+### Local Development
+
+Debug with MCP Inspector:
 
 ```bash
 npm install
