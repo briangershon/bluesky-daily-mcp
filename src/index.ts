@@ -4,24 +4,58 @@ import {
 } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { techSummaryPrompt } from './lib/prompts';
 
 const server = new McpServer({
   name: 'Bluesky Daily',
-  version: '1.0.0',
+  version: '0.1.0',
+  capabilities: {
+    resources: {},
+    prompts: {},
+  },
 });
 
 server.resource(
-  'blueskydaily',
-  new ResourceTemplate('blueskydaily://{message}', { list: undefined }),
-  async (uri, { message }) => ({
-    contents: [
-      {
-        uri: uri.href,
-        text: `Resource echo: ${message}`,
-      },
-    ],
-  })
+  'blueskydaily-posts',
+  new ResourceTemplate('blueskydaily://posts/{yyyymmdd}', {
+    list: () => {
+      // Get last 7 days as YYYYMMDD strings
+      const dates = [];
+      const today = new Date();
+      // generate 4 days, excluding today
+      for (let i = 1; i < 5; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const yyyymmdd = date.toISOString().slice(0, 10).replace(/-/g, '');
+        dates.push({
+          name: `BlueSky posts for ${yyyymmdd}`,
+          uri: `blueskydaily://posts/${yyyymmdd}`,
+          description: `BlueSky posts for the date ${yyyymmdd}`,
+          mimeType: 'application/json',
+        });
+      }
+      return { resources: dates };
+    },
+  }),
+  async (uri, { yyyymmdd }) => {
+    console.log('URI:', uri);
+    console.log('Extracted yyyymmdd:', yyyymmdd);
+    return {
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify({
+            date: yyyymmdd,
+            posts: [
+              { post: 'post 1 about Typescript' },
+              { post: 'post 2 about React' },
+              { post: 'post 3 about Node.js' },
+            ],
+          }),
+          mimeType: 'application/json',
+        },
+      ],
+    };
+  }
 );
 
 /**
@@ -30,19 +64,51 @@ server.resource(
  */
 server.prompt(
   'tech-summary',
-  'Generate a summary of key technical topics in Bluesky posts',
-  { posts: z.string() },
-  ({ posts }) => ({
-    messages: [
-      {
-        role: 'user',
-        content: {
-          type: 'text',
-          text: techSummaryPrompt({ posts }),
+  // 'Generate a summary of key technical topics in Bluesky posts',
+  { yyyymmdd: z.string().describe('Date in YYYYMMDD format') },
+  async ({ yyyymmdd }, extra) => {
+    const resourceUri = `blueskydaily://posts/${yyyymmdd}`;
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Analyze these Bluesky posts and provide a markdown summary.
+    
+    Guidelines:
+    - analyze the posts all together to find key topics
+    - do not group by author
+    
+    Most Interesting (prioritize posts that have content with URLs or software development):
+    
+    - Summarize key topics and include details so it is not generic
+    - Explain which posts were part of each topic
+    - Annotate each summary with urlToOriginalPost from source posts.
+    
+    Other Content:
+    
+    - Brief overview
+    - URLs
+    
+    Here are the posts:`,
+          },
         },
-      },
-    ],
-  })
+        {
+          role: 'user',
+          content: {
+            type: 'resource',
+            resource: {
+              uri: resourceUri,
+              text: '{"hello": "world"}',
+              mimeType: 'application/json',
+            },
+          },
+        },
+      ],
+    };
+  }
 );
 
 async function main() {
