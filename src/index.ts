@@ -37,8 +37,6 @@ server.resource(
     },
   }),
   async (uri, { yyyymmdd }) => {
-    console.log('URI:', uri);
-    console.log('Extracted yyyymmdd:', yyyymmdd);
     return {
       contents: [
         {
@@ -63,12 +61,10 @@ server.resource(
  * posts: Pass in a stringified JSON object with a list of posts.
  */
 server.prompt(
-  'tech-summary',
-  // 'Generate a summary of key technical topics in Bluesky posts',
-  { yyyymmdd: z.string().describe('Date in YYYYMMDD format') },
-  async ({ yyyymmdd }, extra) => {
-    const resourceUri = `blueskydaily://posts/${yyyymmdd}`;
-
+  'Summarize Key Technical Topics',
+  'Generate a summary of key technical topics in Bluesky posts',
+  {},
+  async ({}, extra) => {
     return {
       messages: [
         {
@@ -90,20 +86,7 @@ server.prompt(
     Other Content:
     
     - Brief overview
-    - URLs
-    
-    Here are the posts:`,
-          },
-        },
-        {
-          role: 'user',
-          content: {
-            type: 'resource',
-            resource: {
-              uri: resourceUri,
-              text: '{"hello": "world"}',
-              mimeType: 'application/json',
-            },
+    - URLs`,
           },
         },
       ],
