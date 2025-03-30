@@ -53,10 +53,15 @@ TIMEZONE_OFFSET=
 
 Debug with MCP Inspector:
 
-```bash
+````bash
 npm install
-npm run inspector
-```
+npm run build && npx @modelcontextprotocol/inspector -e BLUESKY_HANDLE=XXX -e BLUESKY_APP_PASSWORD=XXX -e TIMEZONE_OFFSET=XXX node dist/index.js```
+
+Debug by viewing logs
+
+```bash
+tail -n 20 -F ~/Library/Logs/Claude/mcp*.log
+````
 
 ### Run tests or coverage reports
 

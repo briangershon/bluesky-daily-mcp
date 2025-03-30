@@ -31,7 +31,6 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "inspector": "npm run build && npx @modelcontextprotocol/inspector node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
