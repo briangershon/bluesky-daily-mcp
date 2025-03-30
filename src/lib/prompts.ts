@@ -1,5 +1,14 @@
-export function techSummaryPrompt() {
-  return `Analyze these Bluesky posts and provide a markdown summary.
+export type TechSummaryPrompt = {
+  name: string;
+  description: string;
+  prompt: string;
+};
+
+export function promptForTechSummary(): TechSummaryPrompt {
+  return {
+    name: 'Summarize Key Technical Topics',
+    description: 'Generate a summary of key technical topics in Bluesky posts',
+    prompt: `Analyze these Bluesky posts and provide a markdown summary.
     
     Guidelines:
     - analyze the posts all together to find key topics
@@ -14,5 +23,6 @@ export function techSummaryPrompt() {
     Other Content:
     
     - Brief overview
-    - URLs`;
+    - URLs`,
+  };
 }

@@ -3,7 +3,7 @@ import {
   ResourceTemplate,
 } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { techSummaryPrompt } from './lib/prompts';
+import { promptForTechSummary } from './lib/prompts';
 import {
   dailyPostsResources,
   dailyPostsResourcesTemplateUri,
@@ -47,9 +47,10 @@ server.resource(
  * Generate a summary of key technical topics in Bluesky posts.
  * posts: Pass in a stringified JSON object with a list of posts.
  */
+const techSummaryPrompt = promptForTechSummary();
 server.prompt(
-  'Summarize Key Technical Topics',
-  'Generate a summary of key technical topics in Bluesky posts',
+  techSummaryPrompt.name,
+  techSummaryPrompt.description,
   {},
   async ({}, extra) => {
     return {
@@ -58,7 +59,7 @@ server.prompt(
           role: 'user',
           content: {
             type: 'text',
-            text: techSummaryPrompt(),
+            text: techSummaryPrompt.prompt,
           },
         },
       ],
