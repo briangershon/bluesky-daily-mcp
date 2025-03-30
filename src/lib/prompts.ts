@@ -13,13 +13,12 @@ export function promptForTechSummary(): TechSummaryPrompt {
     Guidelines:
     - analyze the posts all together to find key topics
     - do not group by author
-    
-    Most Interesting (prioritize posts that have content with URLs or software development):
-    
     - Summarize key topics and include details so it is not generic
     - Explain which posts were part of each topic
-    - Annotate each summary with urlToOriginalPost from source posts.
+    - Annotate each summary with urlToOriginalPost. Do not modify, shorten, or split urlToOriginalPost links in any way. Treat the 'did' component of links as an essential part of the URL that must be preserved intact. When sharing links, always verify that the full URL is visible and clickable.
     
+    Most Interesting (prioritize posts that have content with URLs or software development):
+        
     Other Content:
     
     - Brief overview
