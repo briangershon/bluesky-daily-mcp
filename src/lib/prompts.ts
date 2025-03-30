@@ -1,4 +1,4 @@
-export function techSummaryPrompt({ posts }: { posts: unknown }) {
+export function techSummaryPrompt() {
   return `Analyze these Bluesky posts and provide a markdown summary.
     
     Guidelines:
@@ -14,8 +14,5 @@ export function techSummaryPrompt({ posts }: { posts: unknown }) {
     Other Content:
     
     - Brief overview
-    - URLs
-    
-    posts: ${posts}
-    `;
+    - URLs`;
 }
