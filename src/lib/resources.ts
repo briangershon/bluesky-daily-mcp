@@ -1,8 +1,27 @@
+import { Agent, CredentialSession } from '@atproto/api';
+import {
+  getDailyPostsFromFollows,
+  retrieveAuthorFeedGenerator,
+  retrieveFollowsGenerator,
+  uriToUrl,
+  type DailyPostsFromFollowsResponse,
+} from 'bsky-tldr';
+import 'dotenv/config';
+
 type MCPResource = {
   name: string;
   uri: string;
   description: string;
   mimeType: string;
+};
+
+// these attributes are named to be meaningful to the LLM model
+type StandalonePost = {
+  urlToOriginalPost: string;
+  authorWhoPostedOrReposted: string;
+  content: string;
+  links: string[];
+  didAuthorRepost: boolean;
 };
 
 export const dailyPostsResourcesTemplateUri = 'blueskydaily://posts/{yyyymmdd}';
@@ -25,14 +44,62 @@ export function dailyPostsResources(today: Date): MCPResource[] {
   return resources;
 }
 
-export function retrievePosts(yyyymmdd: string | string[]): any[] {
+export async function retrievePosts(
+  yyyymmdd: string | string[]
+): Promise<StandalonePost[]> {
   if (Array.isArray(yyyymmdd)) {
-    throw new Error('array of yyyymmdd not supported');
+    throw new Error('array of yyyymmdd not yet supported');
   }
 
-  return [
-    { post: 'post 1 about Typescript' },
-    { post: 'post 2 about React' },
-    { post: 'post 3 about Node.js' },
-  ];
+  const sourceActor = process.env.BLUESKY_HANDLE;
+  const appPassword = process.env.BLUESKY_APP_PASSWORD;
+  const timezoneOffset = process.env.TIMEZONE_OFFSET;
+
+  if (!sourceActor || !appPassword || !timezoneOffset) {
+    throw new Error(
+      'BLUESKY_USER_NAME and BLUESKY_APP_PASSWORD and TIMEZONE_OFFSET must be set'
+    );
+  }
+
+  const targetDate = yyyymmdd;
+
+  const session = new CredentialSession(new URL('https://bsky.social'));
+  const bluesky = new Agent(session);
+  const loginResponse = await session.login({
+    identifier: sourceActor,
+    password: appPassword,
+  });
+
+  if (loginResponse.success === false) {
+    throw new Error('Bluesky Login failed');
+  }
+
+  const response: DailyPostsFromFollowsResponse =
+    await getDailyPostsFromFollows({
+      bluesky,
+      sourceActor,
+      targetDate,
+      timezoneOffset: parseInt(timezoneOffset, 10),
+      retrieveFollows: retrieveFollowsGenerator,
+      retrieveAuthorFeed: retrieveAuthorFeedGenerator,
+    });
+
+  const follows = response.follows;
+
+  // build an array of all posts, not focused on author
+  const dailyPosts: StandalonePost[] = [];
+  for (const authorDid in follows) {
+    const posts = follows[authorDid].posts;
+    for (const post of posts) {
+      dailyPosts.push({
+        urlToOriginalPost: uriToUrl(post.uri) || '',
+        authorWhoPostedOrReposted: authorDid,
+        content: post.content,
+        links: post.links,
+        didAuthorRepost: post.isRepost,
+      });
+    }
+  }
+
+  return dailyPosts;
 }

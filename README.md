@@ -1,6 +1,6 @@
 # bluesky-daily-mcp
 
-An MCP Server to play with daily posts from your follows in Bluesky.
+An MCP Server to retrieve and play with daily posts from your follows in Bluesky.
 
 ## Installation
 
@@ -13,10 +13,22 @@ For Claude Desktop, you can install this MCP Server by adding the following to y
   "mcpServers": [
     "bluesky-daily-mcp": {
       "command": "node",
-      "args": ["/absolute/path/to/your/dist/index.js"]
-    }  ]
+      "args": ["/absolute/path/to/your/dist/index.js"],
+      "env": {
+        "BLUESKY_HANDLE": "",
+        "BLUESKY_APP_PASSWORD": "",
+        "TIMEZONE_OFFSET": "-8",
+      }
+    }
+  ]
 }
 ```
+
+What are these env variables?
+
+`BLUESKY_HANDLE` is your Bluesky handle without the @ sign, e.g. `your_handle.bsky.social` or `customdomain.com`.
+`BLUESKY_APP_PASSWORD` is your Bluesky app password, which you can generate from the [Bluesky App Passwords Settings page](https://bsky.app/settings/app-passwords).
+`TIMEZONE_OFFSET` is the timezone offset from UTC in hours. For example, `-8` for PST, `+8` for CST.
 
 Build the MCP Server:
 
@@ -31,6 +43,14 @@ Restart Claude Desktop to load up new MCP Server.
 
 ### Local Development
 
+Setup your local `.env` file with:
+
+```bash
+BLUESKY_HANDLE=
+BLUESKY_APP_PASSWORD=
+TIMEZONE_OFFSET=
+```
+
 Debug with MCP Inspector:
 
 ```bash
@@ -43,6 +63,14 @@ npm run inspector
 ```bash
 npm test
 npm run coverage
+```
+
+### Manually retrieve posts
+
+If you want to make sure the post retrieval code is running ok with your .env, run:
+
+```bash
+npm run retrieve-posts
 ```
 
 ### Steps for publishing package to NPM

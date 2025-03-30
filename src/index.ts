@@ -34,7 +34,7 @@ server.resource(
           uri: uri.href,
           text: JSON.stringify({
             date: yyyymmdd,
-            posts: retrievePosts(yyyymmdd),
+            posts: await retrievePosts(yyyymmdd),
           }),
           mimeType: 'application/json',
         },
