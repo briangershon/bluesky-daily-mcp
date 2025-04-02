@@ -2,9 +2,13 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
+  ListPromptsResult,
   ListToolsRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
+import { promptForTechSummary } from './lib/prompts';
 // import { promptForTechSummary } from './lib/prompts';
 // import {
 //   dailyPostsResources,
@@ -21,9 +25,12 @@ const server = new Server(
     capabilities: {
       tools: {},
       logging: {},
+      prompts: {},
     },
   }
 );
+
+const techSummaryPrompt = promptForTechSummary();
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -137,35 +144,44 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 //   }
 // );
 
-// /**
-//  * Generate a summary of key technical topics in Bluesky posts.
-//  * posts: Pass in a stringified JSON object with a list of posts.
-//  */
-// const techSummaryPrompt = promptForTechSummary();
-// server.prompt(
-//   techSummaryPrompt.name,
-//   techSummaryPrompt.description,
-//   {},
-//   async ({}, extra) => {
-//     return {
-//       messages: [
-//         {
-//           role: 'user',
-//           content: {
-//             type: 'text',
-//             text: techSummaryPrompt.prompt,
-//           },
-//         },
-//       ],
-//     };
-//   }
-// );
+/**
+ * Generate a summary of key technical topics in Bluesky posts.
+ * posts: Pass in a stringified JSON object with a list of posts.
+ */
+server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
+  return {
+    prompts: [
+      {
+        name: techSummaryPrompt.name,
+        description: techSummaryPrompt.name,
+      },
+    ],
+  } as ListPromptsResult;
+});
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  if (name === techSummaryPrompt.name) {
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: techSummaryPrompt.prompt,
+          },
+        },
+      ],
+    };
+  }
+
+  throw new Error(`Unknown prompt: ${name}`);
+});
 
 async function main() {
   const transport = new StdioServerTransport();
-  console.error('XXXXX About to Connected to transport');
   await server.connect(transport);
-  console.error('XXXXX Connected to transport');
 }
 
 main();
