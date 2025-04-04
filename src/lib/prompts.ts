@@ -15,7 +15,7 @@ export function promptForTechSummary(): TechSummaryPrompt {
     - do not group by author
     - Summarize key topics and include details so it is not generic
     - Explain which posts were part of each topic
-    - Annotate each summary with urlToOriginalPost. Do not modify, shorten, or split urlToOriginalPost links in any way. Treat the 'did' component of links as an essential part of the URL that must be preserved intact. When sharing links, always verify that the full URL is visible and clickable.
+    - Annotate each summary with urlToOriginalPost. Do not modify, shorten, or split urlToOriginalPost links in any way. Treat the 'did:plc' component of links as an essential part of the URL that must be preserved intact. When sharing links, always verify that the full URL is visible and clickable. Links should always be on one line.
     
     Most Interesting (prioritize posts that have content with URLs or software development):
         
