@@ -5,16 +5,13 @@ import {
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
   ListPromptsResult,
+  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import { promptForTechSummary } from './lib/prompts';
-// import { promptForTechSummary } from './lib/prompts';
-// import {
-//   dailyPostsResources,
-//   dailyPostsResourcesTemplateUri,
-//   retrievePosts,
-// } from './lib/resources';
+import { dailyPostsResources, retrievePosts } from './lib/resources';
 
 const server = new Server(
   {
@@ -26,6 +23,7 @@ const server = new Server(
       tools: {},
       logging: {},
       prompts: {},
+      resources: {},
     },
   }
 );
@@ -76,23 +74,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       logger: 'hello-debug',
     });
 
-    const stepDuration = 10;
-    const steps = 5;
-    for (let i = 1; i < steps + 1; i++) {
-      await new Promise((resolve) => setTimeout(resolve, stepDuration * 1000));
+    // const stepDuration = 10;
+    // const steps = 5;
+    // for (let i = 1; i < steps + 1; i++) {
+    //   await new Promise((resolve) => setTimeout(resolve, stepDuration * 1000));
 
-      if (progressToken !== undefined) {
-        await server.notification({
-          method: 'notifications/progress',
-          params: {
-            progress: i,
-            total: steps,
-            progressToken,
-            message: `Step ${i} of ${steps}`,
-          },
-        });
-      }
-    }
+    //   if (progressToken !== undefined) {
+    //     await server.notification({
+    //       method: 'notifications/progress',
+    //       params: {
+    //         progress: i,
+    //         total: steps,
+    //         progressToken,
+    //         message: `Step ${i} of ${steps}`,
+    //       },
+    //     });
+    //   }
+    // }
 
     // setTimeout(() => {
     //   console.error('SET TIMEOUT');
@@ -120,29 +118,86 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   throw new Error('Tool not found');
 });
 
-// server.resource(
-//   'blueskydaily-posts',
-//   new ResourceTemplate(dailyPostsResourcesTemplateUri, {
-//     list: () => {
-//       const resources = dailyPostsResources(new Date());
-//       return { resources };
-//     },
-//   }),
-//   async (uri, { yyyymmdd }) => {
-//     return {
-//       contents: [
-//         {
-//           uri: uri.href,
-//           text: JSON.stringify({
-//             date: yyyymmdd,
-//             posts: await retrievePosts(yyyymmdd),
-//           }),
-//           mimeType: 'application/json',
-//         },
-//       ],
-//     };
-//   }
-// );
+// server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
+//   return {
+//     resourceTemplates: [
+//       {
+//         uriTemplate: 'blueskydaily://posts/{yyyymmdd}',
+//         name: 'Static Resource',
+//         description: 'A static resource with a numeric ID',
+//       },
+//     ],
+//   };
+// });
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  return {
+    resources: dailyPostsResources(new Date()),
+  };
+});
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri, arguments: args, _meta } = request.params;
+  console.error(JSON.stringify({ uri, args, _meta }));
+
+  const yyyymmdd = uri.split('://posts/')[1];
+
+  const progressToken = `bluesky-daily-posts-${yyyymmdd}`; // _meta?.progressToken;
+  console.error('progressToken', progressToken);
+
+  server.sendLoggingMessage({
+    level: 'info',
+    data: 'HELLO RESOURCE',
+    logger: 'hello-resource',
+  });
+
+  // const uri = request.params.uri.toString();
+
+  if (uri.startsWith('blueskydaily://')) {
+    if (progressToken !== undefined) {
+      await server.notification({
+        method: 'notifications/progress',
+        params: {
+          progress: 1,
+          total: 2,
+          progressToken,
+          message: `Step 1 of 2`,
+        },
+      });
+    }
+
+    const posts = await retrievePosts(yyyymmdd);
+
+    if (progressToken !== undefined) {
+      await server.notification({
+        method: 'notifications/progress',
+        params: {
+          progress: 2,
+          total: 2,
+          progressToken,
+          message: `Step 2 of 2`,
+        },
+      });
+    }
+
+    if (yyyymmdd) {
+      return {
+        contents: [
+          {
+            uri,
+            text: JSON.stringify({
+              date: yyyymmdd,
+              posts,
+            }),
+            mimeType: 'application/json',
+          },
+        ],
+      };
+    }
+  }
+
+  throw new Error(`Resource not found: ${uri}`);
+});
 
 /**
  * Generate a summary of key technical topics in Bluesky posts.
@@ -184,4 +239,11 @@ async function main() {
   await server.connect(transport);
 }
 
-main();
+main()
+  .then(() => {
+    console.error('--- Server connected');
+  })
+  .catch((error) => {
+    console.error('Server error:', error);
+    process.exit(1);
+  });

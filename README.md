@@ -55,7 +55,8 @@ Debug with MCP Inspector:
 
 ````bash
 npm install
-npm run build && npx @modelcontextprotocol/inspector -e BLUESKY_HANDLE=XXX -e BLUESKY_APP_PASSWORD=XXX -e TIMEZONE_OFFSET=XXX node dist/index.js```
+npm run build && npx @modelcontextprotocol/inspector -e BLUESKY_HANDLE=XXX -e BLUESKY_APP_PASSWORD=XXX -e TIMEZONE_OFFSET=XXX node dist/index.js
+```
 
 Debug by viewing logs
 
