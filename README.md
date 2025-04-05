@@ -12,7 +12,7 @@ For Claude Desktop, you can install this MCP Server by adding the following to y
 {
   "mcpServers": [
     "bluesky-daily-mcp": {
-      "command": "node",
+      "command": "/absolute/path/to/node",
       "args": ["/absolute/path/to/your/dist/index.js"],
       "env": {
         "BLUESKY_HANDLE": "",
