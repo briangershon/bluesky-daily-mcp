@@ -5,13 +5,15 @@ import {
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
   ListPromptsResult,
-  ListResourcesRequestSchema,
   ListToolsRequestSchema,
-  ReadResourceRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { promptForTechSummary } from './lib/prompts';
-import { dailyPostsResources, retrievePosts } from './lib/resources';
+import {
+  promptForTechSummary,
+  promptForMermaidDiagram,
+  promptRetrieveYesterdayPosts,
+} from './lib/prompts';
+import { retrievePosts } from './lib/resources';
 
 const server = new Server(
   {
@@ -23,30 +25,32 @@ const server = new Server(
       tools: {},
       logging: {},
       prompts: {},
-      resources: {},
     },
   }
 );
 
 const techSummaryPrompt = promptForTechSummary();
+const mermaidDiagramPrompt = promptForMermaidDiagram();
+const yesterdayPostsPrompt = promptRetrieveYesterdayPosts();
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: 'hello_debug',
-        description: 'Respond to greetings such as hello',
+        name: 'bluesky-daily',
+        description:
+          'Respond to requests about retrieving Bluesky posts for a specific day',
         inputSchema: {
           type: 'object',
           properties: {
-            // query: {
-            //   type: 'string',
-            //   description:
-            //     "Local search query (e.g. 'pizza near Central Park')",
-            // },
+            yyyymmdd: {
+              type: 'string',
+              description:
+                "Date in YYYYMMDD format. For example, '20250402' for April 2, 2025.",
+            },
           },
-          required: [],
+          required: ['yyyymmdd'],
           additionalProperties: false,
         },
       } as Tool,
@@ -57,158 +61,95 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args, _meta } = request.params;
 
-  const progressToken = _meta?.progressToken;
-  console.error('progressToken', progressToken);
-
   if (!args) {
     throw new Error('No arguments provided');
   }
 
-  // console.log('Tool call received:', JSON.stringify(request.params));
-  // throw new Error(JSON.stringify(request, null, 2));
-  if (name === 'hello_debug') {
-    // const { a, b } = request.params.arguments;
+  const yyyymmdd = args?.yyyymmdd as string | undefined;
+
+  if (!yyyymmdd) {
+    throw new Error('Missing yyyymmdd argument');
+  }
+
+  if (yyyymmdd.length !== 8) {
+    throw new Error('yyyymmdd must be in YYYYMMDD format');
+  }
+
+  // TODO: ensure yyyymmdd is yesterday or earlier
+
+  if (name === 'bluesky-daily') {
     server.sendLoggingMessage({
       level: 'info',
-      data: 'HELLO TOOL LOG INFO',
-      logger: 'hello-debug',
+      data: `Retrieving Bluesky posts for ${yyyymmdd}`,
+      logger: 'bluesky-daily',
     });
 
-    // const stepDuration = 10;
-    // const steps = 5;
-    // for (let i = 1; i < steps + 1; i++) {
-    //   await new Promise((resolve) => setTimeout(resolve, stepDuration * 1000));
+    const progressToken = request.params._meta?.progressToken;
 
-    //   if (progressToken !== undefined) {
-    //     await server.notification({
-    //       method: 'notifications/progress',
-    //       params: {
-    //         progress: i,
-    //         total: steps,
-    //         progressToken,
-    //         message: `Step ${i} of ${steps}`,
-    //       },
-    //     });
-    //   }
-    // }
-
-    // setTimeout(() => {
-    //   console.error('SET TIMEOUT');
-    //   const notification = {
-    //     method: 'notifications/progress',
-    //     params: {
-    //       progressToken: progressToken,
-    //       process: 0,
-    //       total: 100,
-    //       message: 'my progress message',
-    //     },
-    //   };
-    //   server.notification(notification);
-    // }, 10000);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: 'HOWDY!',
-        },
-      ],
-    };
-  }
-  throw new Error('Tool not found');
-});
-
-// server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
-//   return {
-//     resourceTemplates: [
-//       {
-//         uriTemplate: 'blueskydaily://posts/{yyyymmdd}',
-//         name: 'Static Resource',
-//         description: 'A static resource with a numeric ID',
-//       },
-//     ],
-//   };
-// });
-
-server.setRequestHandler(ListResourcesRequestSchema, async () => {
-  return {
-    resources: dailyPostsResources(new Date()),
-  };
-});
-
-server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-  const { uri, arguments: args, _meta } = request.params;
-  console.error(JSON.stringify({ uri, args, _meta }));
-
-  const yyyymmdd = uri.split('://posts/')[1];
-
-  const progressToken = `bluesky-daily-posts-${yyyymmdd}`; // _meta?.progressToken;
-  console.error('progressToken', progressToken);
-
-  server.sendLoggingMessage({
-    level: 'info',
-    data: 'HELLO RESOURCE',
-    logger: 'hello-resource',
-  });
-
-  // const uri = request.params.uri.toString();
-
-  if (uri.startsWith('blueskydaily://')) {
-    if (progressToken !== undefined) {
+    try {
       await server.notification({
         method: 'notifications/progress',
         params: {
           progress: 1,
           total: 2,
           progressToken,
-          message: `Step 1 of 2`,
         },
       });
-    }
 
-    const posts = await retrievePosts(yyyymmdd);
+      const posts = await retrievePosts(yyyymmdd);
 
-    if (progressToken !== undefined) {
       await server.notification({
         method: 'notifications/progress',
         params: {
           progress: 2,
           total: 2,
           progressToken,
-          message: `Step 2 of 2`,
         },
       });
-    }
 
-    if (yyyymmdd) {
       return {
-        contents: [
+        content: [
           {
-            uri,
+            type: 'text',
             text: JSON.stringify({
               date: yyyymmdd,
               posts,
             }),
-            mimeType: 'application/json',
           },
         ],
+        isError: false,
+      };
+    } catch (e) {
+      const err = e as Error;
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error while retrieving posts for ${yyyymmdd} due to ${err.message}`,
+          },
+        ],
+        isError: true,
       };
     }
   }
 
-  throw new Error(`Resource not found: ${uri}`);
+  throw new Error('Tool not found');
 });
 
-/**
- * Generate a summary of key technical topics in Bluesky posts.
- * posts: Pass in a stringified JSON object with a list of posts.
- */
 server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
   return {
     prompts: [
       {
         name: techSummaryPrompt.name,
-        description: techSummaryPrompt.name,
+        description: techSummaryPrompt.description,
+      },
+      {
+        name: mermaidDiagramPrompt.name,
+        description: mermaidDiagramPrompt.description,
+      },
+      {
+        name: yesterdayPostsPrompt.name,
+        description: yesterdayPostsPrompt.description,
       },
     ],
   } as ListPromptsResult;
@@ -231,6 +172,34 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     };
   }
 
+  if (name === mermaidDiagramPrompt.name) {
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: mermaidDiagramPrompt.prompt,
+          },
+        },
+      ],
+    };
+  }
+
+  if (name === yesterdayPostsPrompt.name) {
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: yesterdayPostsPrompt.prompt,
+          },
+        },
+      ],
+    };
+  }
+
   throw new Error(`Unknown prompt: ${name}`);
 });
 
@@ -239,11 +208,7 @@ async function main() {
   await server.connect(transport);
 }
 
-main()
-  .then(() => {
-    console.error('--- Server connected');
-  })
-  .catch((error) => {
-    console.error('Server error:', error);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error('Server error:', error);
+  process.exit(1);
+});

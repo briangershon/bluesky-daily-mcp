@@ -18,6 +18,7 @@ For Claude Desktop, you can install this MCP Server by adding the following to y
         "BLUESKY_HANDLE": "",
         "BLUESKY_APP_PASSWORD": "",
         "TIMEZONE_OFFSET": "-8",
+        "REQUEST_TIMEOUT_MS": "120000"
       }
     }
   ]
@@ -29,6 +30,7 @@ What are these env variables?
 `BLUESKY_HANDLE` is your Bluesky handle without the @ sign, e.g. `your_handle.bsky.social` or `customdomain.com`.
 `BLUESKY_APP_PASSWORD` is your Bluesky app password, which you can generate from the [Bluesky App Passwords Settings page](https://bsky.app/settings/app-passwords).
 `TIMEZONE_OFFSET` is the timezone offset from UTC in hours. For example, `-8` for PST, `+8` for CST.
+`REQUEST_TIMEOUT_MS` is the max timeout.
 
 Build the MCP Server:
 
@@ -61,7 +63,7 @@ npm run build && npx @modelcontextprotocol/inspector -e BLUESKY_HANDLE=XXX -e BL
 Debug by viewing logs
 
 ```bash
-tail -n 20 -F ~/Library/Logs/Claude/mcp*.log
+tail -n 20 -F ~/Library/Logs/Claude/mcp-server-bluesky-daily-mcp.log
 ````
 
 ### Run tests or coverage reports
