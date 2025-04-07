@@ -9,9 +9,10 @@ import {
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import {
-  promptForTechSummary,
   promptForMermaidDiagram,
+  promptForTechSummary,
   promptRetrieveYesterdayPosts,
+  promptSummarizeAuthorsPosts,
 } from './lib/prompts';
 import { retrievePosts } from './lib/resources';
 
@@ -32,6 +33,7 @@ const server = new Server(
 const techSummaryPrompt = promptForTechSummary();
 const mermaidDiagramPrompt = promptForMermaidDiagram();
 const yesterdayPostsPrompt = promptRetrieveYesterdayPosts();
+const summarizeAuthorsPosts = promptSummarizeAuthorsPosts();
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -151,6 +153,10 @@ server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
         name: yesterdayPostsPrompt.name,
         description: yesterdayPostsPrompt.description,
       },
+      {
+        name: summarizeAuthorsPosts.name,
+        description: summarizeAuthorsPosts.description,
+      },
     ],
   } as ListPromptsResult;
 });
@@ -194,6 +200,20 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           content: {
             type: 'text',
             text: yesterdayPostsPrompt.prompt,
+          },
+        },
+      ],
+    };
+  }
+
+  if (name === summarizeAuthorsPosts.name) {
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: summarizeAuthorsPosts.prompt,
           },
         },
       ],

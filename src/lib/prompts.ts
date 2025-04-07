@@ -43,6 +43,10 @@ export function promptRetrieveYesterdayPosts(): Prompt {
   };
 }
 
-// create a mermaid mind map of authors and their posts using mermaid
-
-// create a mermaid diagram of all the post authors and their posts
+export function promptSummarizeAuthorsPosts(): Prompt {
+  return {
+    name: `Summarize Authors' Posts`,
+    description: `Summarize each author's posts and group by author`,
+    prompt: `Group posts by Author and then summarize each author's posts. Show post count, and a summary of their posts. Include the most interesting posts and any notable themes or topics. Provide a markdown summary with links to the original posts. For authors, show link to their profile on Bluesky.`,
+  };
+}
