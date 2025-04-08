@@ -8,6 +8,20 @@ An MCP Server to help you surface the most interesting or novel conversations fr
 - sample prompts for analyzing posts
 - caches the posts for a given day
 
+Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) npm package which normalizes them into this format for easy consumption by LLM:
+
+```json
+[
+  {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3lh4unyelgs2i",
+    "content": "There are some missing details in this report claiming to have leaked the system prompt - most notably they don't clarify if they got the system prompt for DeepSeek v3 or DeepSeek R1 (I'm interred in R1) lab.wallarm.com/jailbreaking...",
+    "createdAt": "2025-02-01T15:53:09.612Z",
+    "isRepost": false,
+    "links": ["https://lab.wallarm.com/jailbreaking-generative-ai/"]
+  }
+]
+```
+
 ## Limitations
 
 - This retrieves all posts from your follows for a given day. This will become large and subsequently you'll lose posts that are truncated by the MCP Client or the LLM's context window. Will need additional strategies to handle this.
