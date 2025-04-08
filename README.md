@@ -1,6 +1,6 @@
 # bluesky-daily-mcp
 
-An MCP Server to help you surface the most interesting conversations from your Bluesky follows daily.
+An MCP Server to help you surface the most interesting topics from your Bluesky follows daily.
 
 ## Features
 
@@ -22,7 +22,7 @@ Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) n
 ]
 ```
 
-<img src="screenshots/visual-summary-of-bluesky-posts.jpg?raw=true" width="600" height="600" alt="Visual Summary of Bluesky Posts" />
+<img src="https://github.com/briangershon/bluesky-daily-mcp/blob/main/screenshots/visual-summary-of-bluesky-posts.jpg?raw=true" width="600" height="600" alt="Visual Summary of Bluesky Posts" />
 
 ## Limitations
 
@@ -74,7 +74,7 @@ What are these env variables?
 - Fire up Claude Desktop and start a new conversation
 - Type in "Retrieve Bluesky posts from yesterday" or "Retrieve Bluesky posts from April 2nd" (or whatever date you want)
 
-<img src="screenshots/claude-desktop.png?raw=true" width="800" alt="Using MCP Server with Claude Desktop" />
+<img src="https://github.com/briangershon/bluesky-daily-mcp/blob/main/screenshots/claude-desktop.png?raw=true" width="800" alt="Using MCP Server with Claude Desktop" />
 
 ## Help for Contributors
 
