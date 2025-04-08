@@ -42,7 +42,16 @@ export default [
     plugins,
     external,
   },
-  // Single d.ts file
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/cli.js',
+      format: 'esm',
+      banner: '#!/usr/bin/env node',
+    },
+    plugins,
+    external,
+  },
   {
     input: 'src/index.ts',
     output: {
