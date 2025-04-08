@@ -1,19 +1,38 @@
 # bluesky-daily-mcp
 
-An MCP Server to retrieve and play with daily posts from your follows in Bluesky.
+An MCP Server to help you surface the most interesting or novel conversations from your Bluesky follows daily.
+
+## Features
+
+- a tool to retrieve all posts from your follows for a given day
+- sample prompts for analyzing posts
+- caches the posts for a given day
+
+## Limitations
+
+- This retrieves all posts from your follows for a given day. This will become large and subsequently you'll lose posts that are truncated by the MCP Client or the LLM's context window. Will need additional strategies to handle this.
 
 ## Installation
 
 Install this MCP Server with your MCP Client, such as Claude Desktop.
 
-For Claude Desktop, you can install this MCP Server by adding the following to your `~/Library/Application\ Support/Claude/claude_desktop_config.json` (on MacOS):
+Here are the three steps:
+
+👉 1. **Build the MCP Server first**
+
+```bash
+npm install
+npm run build
+```
+
+👉 2. **Configure.** For Claude Desktop, you can install this MCP Server by adding the following to your `~/Library/Application\ Support/Claude/claude_desktop_config.json` (on MacOS):
 
 ```json
 {
   "mcpServers": [
     "bluesky-daily-mcp": {
       "command": "/absolute/path/to/node",
-      "args": ["/absolute/path/to/your/dist/index.js"],
+      "args": ["/absolute/path/to/this/dist/index.js"],
       "env": {
         "BLUESKY_HANDLE": "",
         "BLUESKY_APP_PASSWORD": "",
@@ -27,23 +46,16 @@ For Claude Desktop, you can install this MCP Server by adding the following to y
 
 What are these env variables?
 
-`BLUESKY_HANDLE` is your Bluesky handle without the @ sign, e.g. `your_handle.bsky.social` or `customdomain.com`.
-`BLUESKY_APP_PASSWORD` is your Bluesky app password, which you can generate from the [Bluesky App Passwords Settings page](https://bsky.app/settings/app-passwords).
-`TIMEZONE_OFFSET` is the timezone offset from UTC in hours. For example, `-8` for PST, `+8` for CST.
-`REQUEST_TIMEOUT_MS` is the max timeout.
+- `BLUESKY_HANDLE` is your Bluesky handle without the @ sign, e.g. `your_handle.bsky.social` or `customdomain.com`.
+- `BLUESKY_APP_PASSWORD` is a Bluesky app password, which you can generate from the [Bluesky App Passwords Settings page](https://bsky.app/settings/app-passwords).
+- `TIMEZONE_OFFSET` is the timezone offset from UTC in hours. For example, `-8` for PST, `+8` for CST. This helps define what a "day" is for you, so it's not hard-coded to UTC.
+- `REQUEST_TIMEOUT_MS` is the max timeout for the request that retrieves the posts to run. Without this, you have a default of ~60 seconds (60000 ms). Recommend setting this to 2 minutes (120000 ms).
 
-Build the MCP Server:
-
-```bash
-npm install
-npm run build
-```
-
-Restart Claude Desktop to load up new MCP Server.
+👉 3. **Restart Claude Desktop to load up new MCP Server.**
 
 ## Help for Contributors
 
-### Local Development
+### Running locally for development
 
 Setup your local `.env` file with:
 
@@ -80,12 +92,3 @@ If you want to make sure the post retrieval code is running ok with your .env, r
 ```bash
 npm run retrieve-posts
 ```
-
-### Steps for publishing package to NPM
-
-After merging latest code to `main` branch:
-
-1. Locally, `git checkout main && git pull`
-2. `npm version patch` # or minor, or major
-3. `git push --follow-tags`
-4. Create a GitHub release
