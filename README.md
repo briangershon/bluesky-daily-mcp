@@ -115,3 +115,12 @@ If you want to make sure the post retrieval code is running ok with your .env, r
 ```bash
 npm run retrieve-posts
 ```
+
+## Steps for publishing package to NPM
+
+After merging latest code to main branch:
+
+1. Locally, `git checkout main && git pull`
+2. `npm version patch` # or minor, or major
+3. `git push --follow-tags`
+4. A GitHub release is automatically written and published

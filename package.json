@@ -1,6 +1,6 @@
 {
   "name": "bluesky-daily-mcp",
-  "description": "An MCP Server to play with daily posts from your follows in Bluesky.",
+  "description": "An MCP Server to help you surface the most interesting topics from your Bluesky follows daily.",
   "version": "0.1.0",
   "license": "MIT",
   "repository": {
@@ -14,12 +14,16 @@
     "atproto",
     "mcp",
     "mcp-server",
+    "modelcontextprotocol",
     "summary",
     "summarize"
   ],
   "files": [
     "/dist"
   ],
+  "bin": {
+    "bluesky-daily-mcp": "dist/index.js"
+  },
   "type": "module",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
