@@ -1,6 +1,6 @@
 # bluesky-daily-mcp
 
-An MCP Server to help you surface the most interesting or novel conversations from your Bluesky follows daily.
+An MCP Server to help you surface the most interesting conversations from your Bluesky follows daily.
 
 ## Features
 
@@ -21,6 +21,8 @@ Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) n
   }
 ]
 ```
+
+<img src="screenshots/visual-summary-of-bluesky-posts.jpg?raw=true" width="600" height="600" alt="Visual Summary of Bluesky Posts" />
 
 ## Limitations
 
@@ -66,6 +68,13 @@ What are these env variables?
 - `REQUEST_TIMEOUT_MS` is the max timeout for the request that retrieves the posts to run. Without this, you have a default of ~60 seconds (60000 ms). Recommend setting this to 2 minutes (120000 ms).
 
 👉 3. **Restart Claude Desktop to load up new MCP Server.**
+
+## Try it out
+
+- Fire up Claude Desktop and start a new conversation
+- Type in "Retrieve Bluesky posts from yesterday" or "Retrieve Bluesky posts from April 2nd" (or whatever date you want)
+
+<img src="screenshots/claude-desktop.png?raw=true" width="800" alt="Using MCP Server with Claude Desktop" />
 
 ## Help for Contributors
 
