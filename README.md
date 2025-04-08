@@ -36,7 +36,7 @@ Here are the steps:
 
 👉 1. **Configure.** For Claude Desktop, you can install this MCP Server by adding the following to your `~/Library/Application\ Support/Claude/claude_desktop_config.json` (on MacOS):
 
-**Option 1: Run from NPM package**
+**Option A: Run from NPM package**
 
 NOTE: `PATH` pointing to the absolute path to the `/bin` folder where `npx` is running is only needed if you use `NVM` to manage your Node.js versions. Without that, you may see a mysterious "Header not set" error. Find path via `which npx` command.
 
@@ -58,7 +58,7 @@ NOTE: `PATH` pointing to the absolute path to the `/bin` folder where `npx` is r
 }
 ```
 
-**Option 2: Clone repo and run it from source**
+**Option B: Clone repo and run it from source**
 
 Build the MCP Server first in the cloned repo:
 
