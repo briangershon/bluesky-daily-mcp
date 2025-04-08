@@ -32,16 +32,42 @@ Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) n
 
 Install this MCP Server with your MCP Client, such as Claude Desktop.
 
-Here are the three steps:
+Here are the steps:
 
-👉 1. **Build the MCP Server first**
+👉 1. **Configure.** For Claude Desktop, you can install this MCP Server by adding the following to your `~/Library/Application\ Support/Claude/claude_desktop_config.json` (on MacOS):
+
+**Option A: Run from NPM package**
+
+NOTE: `PATH` pointing to the absolute path to the `/bin` folder where `npx` is running is only needed if you use `NVM` to manage your Node.js versions. Without that, you may see a mysterious "Header not set" error. Find path via `which npx` command.
+
+```json
+{
+  "mcpServers": [
+    "bluesky-daily-mcp": {
+      "command": "npx",
+      "args": ["-y", "bluesky-daily-mcp"],
+      "env": {
+        "PATH": "/absolute/path/to/npx/bin:/usr/bin:/bin",
+        "BLUESKY_HANDLE": "",
+        "BLUESKY_APP_PASSWORD": "",
+        "TIMEZONE_OFFSET": "-8",
+        "REQUEST_TIMEOUT_MS": "120000"
+      }
+    }
+  ]
+}
+```
+
+**Option B: Clone repo and run it from source**
+
+Build the MCP Server first in the cloned repo:
 
 ```bash
 npm install
 npm run build
 ```
 
-👉 2. **Configure.** For Claude Desktop, you can install this MCP Server by adding the following to your `~/Library/Application\ Support/Claude/claude_desktop_config.json` (on MacOS):
+NOTE: the `/absolute/path` is needed to `node` if you use `NVM` to manage your Node.js versions. Without that, you may see a mysterious "Header not set" error. Find path via `which node` command.
 
 ```json
 {
@@ -67,7 +93,7 @@ What are these env variables?
 - `TIMEZONE_OFFSET` is the timezone offset from UTC in hours. For example, `-8` for PST, `+8` for CST. This helps define what a "day" is for you, so it's not hard-coded to UTC.
 - `REQUEST_TIMEOUT_MS` is the max timeout for the request that retrieves the posts to run. Without this, you have a default of ~60 seconds (60000 ms). Recommend setting this to 2 minutes (120000 ms).
 
-👉 3. **Restart Claude Desktop to load up new MCP Server.**
+👉 2. **Restart Claude Desktop to load up new MCP Server.**
 
 ## Try it out
 
