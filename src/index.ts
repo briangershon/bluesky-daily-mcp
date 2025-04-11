@@ -9,10 +9,10 @@ import {
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import {
-  promptForMermaidDiagram,
-  promptForTechSummary,
-  promptRetrieveYesterdayPosts,
-  promptSummarizeAuthorsPosts,
+  PROMPT_RETRIEVE_YESTERDAY_POSTS,
+  PROMPT_SUMMARIZE_AUTHORS_POSTS,
+  PROMPT_SUMMARIZE_KEY_TECHNICAL_TOPICS,
+  prompts,
 } from './lib/prompts';
 import { retrievePosts } from './lib/resources';
 
@@ -29,11 +29,6 @@ const server = new Server(
     },
   }
 );
-
-const techSummaryPrompt = promptForTechSummary();
-const mermaidDiagramPrompt = promptForMermaidDiagram();
-const yesterdayPostsPrompt = promptRetrieveYesterdayPosts();
-const summarizeAuthorsPosts = promptSummarizeAuthorsPosts();
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -140,80 +135,54 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
   return {
-    prompts: [
-      {
-        name: techSummaryPrompt.name,
-        description: techSummaryPrompt.description,
-      },
-      {
-        name: mermaidDiagramPrompt.name,
-        description: mermaidDiagramPrompt.description,
-      },
-      {
-        name: yesterdayPostsPrompt.name,
-        description: yesterdayPostsPrompt.description,
-      },
-      {
-        name: summarizeAuthorsPosts.name,
-        description: summarizeAuthorsPosts.description,
-      },
-    ],
+    prompts: Object.entries(prompts).map(([name, details]) => {
+      return {
+        name: name,
+        description: details.description,
+      };
+    }),
   } as ListPromptsResult;
 });
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
-  if (name === techSummaryPrompt.name) {
+  if (name === PROMPT_SUMMARIZE_KEY_TECHNICAL_TOPICS) {
     return {
       messages: [
         {
           role: 'user',
           content: {
             type: 'text',
-            text: techSummaryPrompt.prompt,
+            text: prompts[PROMPT_SUMMARIZE_KEY_TECHNICAL_TOPICS].prompt,
           },
         },
       ],
     };
   }
 
-  if (name === mermaidDiagramPrompt.name) {
+  if (name === PROMPT_RETRIEVE_YESTERDAY_POSTS) {
     return {
       messages: [
         {
           role: 'user',
           content: {
             type: 'text',
-            text: mermaidDiagramPrompt.prompt,
+            text: prompts[PROMPT_RETRIEVE_YESTERDAY_POSTS].prompt,
           },
         },
       ],
     };
   }
 
-  if (name === yesterdayPostsPrompt.name) {
+  if (name === PROMPT_SUMMARIZE_AUTHORS_POSTS) {
     return {
       messages: [
         {
           role: 'user',
           content: {
             type: 'text',
-            text: yesterdayPostsPrompt.prompt,
-          },
-        },
-      ],
-    };
-  }
-
-  if (name === summarizeAuthorsPosts.name) {
-    return {
-      messages: [
-        {
-          role: 'user',
-          content: {
-            type: 'text',
-            text: summarizeAuthorsPosts.prompt,
+            text: prompts[PROMPT_SUMMARIZE_AUTHORS_POSTS].prompt,
           },
         },
       ],

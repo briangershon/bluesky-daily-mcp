@@ -1,12 +1,19 @@
 export type Prompt = {
-  name: string;
   description: string;
   prompt: string;
 };
 
-export function promptForTechSummary(): Prompt {
-  return {
-    name: 'Summarize Key Technical Topics',
+export type PromptDict = {
+  [key: string]: Prompt;
+};
+
+export const PROMPT_SUMMARIZE_KEY_TECHNICAL_TOPICS =
+  'Summarize Key Technical Topics';
+export const PROMPT_RETRIEVE_YESTERDAY_POSTS = "Retrieve yesterday's posts";
+export const PROMPT_SUMMARIZE_AUTHORS_POSTS = "Summarize Authors' Posts";
+
+export const prompts: Record<string, Prompt> = {
+  [PROMPT_SUMMARIZE_KEY_TECHNICAL_TOPICS]: {
     description: 'Generate a summary of key technical topics in Bluesky posts',
     prompt: `Analyze these Bluesky posts and provide a markdown summary.
     
@@ -24,29 +31,14 @@ export function promptForTechSummary(): Prompt {
     
     - Brief overview
     - URLs`,
-  };
-}
-
-export function promptForMermaidDiagram(): Prompt {
-  return {
-    name: 'Create Mermaid Diagram',
-    description: 'Create a mind map of authors and their posts using mermaid.',
-    prompt: `Create a mind map of authors and their posts using mermaid.`,
-  };
-}
-
-export function promptRetrieveYesterdayPosts(): Prompt {
-  return {
-    name: `Retrieve yesterday's posts`,
-    description: `Retrieve yesterday's Bluesky posts`,
-    prompt: `Retrieve yesterday's Bluesky posts.`,
-  };
-}
-
-export function promptSummarizeAuthorsPosts(): Prompt {
-  return {
-    name: `Summarize Authors' Posts`,
-    description: `Summarize each author's posts and group by author`,
-    prompt: `Group posts by Author and then summarize each author's posts. Show post count, and a summary of their posts. Include the most interesting posts and any notable themes or topics. Provide a markdown summary with links to the original posts. For authors, show link to their profile on Bluesky.`,
-  };
-}
+  },
+  [PROMPT_RETRIEVE_YESTERDAY_POSTS]: {
+    description: "Retrieve yesterday's Bluesky posts",
+    prompt: "Retrieve yesterday's Bluesky posts.",
+  },
+  [PROMPT_SUMMARIZE_AUTHORS_POSTS]: {
+    description: "Summarize each author's posts and group by author",
+    prompt:
+      "Group posts by Author and then summarize each author's posts. Show post count, and a summary of their posts. Include the most interesting posts and any notable themes or topics. Provide a markdown summary with links to the original posts. For authors, show link to their profile on Bluesky.",
+  },
+};
