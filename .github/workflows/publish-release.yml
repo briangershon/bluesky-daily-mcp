@@ -1,13 +1,9 @@
-name: Auto-Release with OpenAI Summaries
+name: Summarize PR changes and publish release notes
 
 on:
   push:
     tags:
       - 'v*'
-  workflow_run:
-    workflows: ['Publish to NPM']
-    types:
-      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
