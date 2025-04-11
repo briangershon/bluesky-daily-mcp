@@ -2,6 +2,8 @@
 
 An MCP Server to help you surface the most interesting topics from your Bluesky follows daily.
 
+For examples of how to use, please visit ["Building an MCP Server to Explore My Bluesky Feed"](https://www.briangershon.com/blog/bluesky-daily-mcp-server/).
+
 ## Features
 
 - a tool to retrieve all posts from your follows for a given day
