@@ -22,7 +22,7 @@
     "/dist"
   ],
   "bin": {
-    "bluesky-daily-mcp": "./dist/cli.js"
+    "bluesky-daily-mcp": "dist/cli.js"
   },
   "type": "module",
   "module": "./dist/index.js",
