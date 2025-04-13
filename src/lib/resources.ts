@@ -7,12 +7,7 @@ import {
   type DailyPostsFromFollowsResponse,
 } from 'bsky-tldr';
 import 'dotenv/config';
-import {
-  getCacheFilePath,
-  isCacheFresh,
-  retrieveFromCache,
-  saveToCache,
-} from './cache';
+import { isCacheFresh, retrieveFromCache, saveToCache } from './cache';
 
 type MCPResource = {
   name: string;
@@ -60,10 +55,8 @@ export async function retrievePosts(
     throw new Error('array of yyyymmdd not yet supported');
   }
 
-  const cacheFilePath = getCacheFilePath(yyyymmdd);
-
-  if (isCacheFresh(cacheFilePath)) {
-    const cachedData = retrieveFromCache(cacheFilePath, yyyymmdd);
+  if (isCacheFresh(yyyymmdd)) {
+    const cachedData = retrieveFromCache(yyyymmdd);
     return JSON.parse(cachedData);
   }
 
@@ -117,7 +110,7 @@ export async function retrievePosts(
     }
   }
 
-  saveToCache(cacheFilePath, JSON.stringify(dailyPosts, null, 2));
+  saveToCache(yyyymmdd, JSON.stringify(dailyPosts, null, 2));
 
   return dailyPosts;
 }

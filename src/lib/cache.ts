@@ -23,7 +23,8 @@ export function getCacheFilePath(yyyymmdd: string): string {
 /**
  * Check if the cache file exists and is fresh (less than 24 hours old)
  */
-export function isCacheFresh(filePath: string): boolean {
+export function isCacheFresh(yyyymmdd: string): boolean {
+  const filePath = getCacheFilePath(yyyymmdd);
   if (!fs.existsSync(filePath)) {
     return false;
   }
@@ -35,10 +36,12 @@ export function isCacheFresh(filePath: string): boolean {
   return fileAge < maxAge;
 }
 
-export function retrieveFromCache(filePath: string, data: any): string {
+export function retrieveFromCache(yyyymmdd: string): string {
+  const filePath = getCacheFilePath(yyyymmdd);
   return fs.readFileSync(filePath, 'utf-8');
 }
 
-export function saveToCache(filePath: string, data: any): void {
+export function saveToCache(yyyymmdd: string, data: any): void {
+  const filePath = getCacheFilePath(yyyymmdd);
   fs.writeFileSync(filePath, data);
 }
