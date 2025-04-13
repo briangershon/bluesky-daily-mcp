@@ -1,11 +1,5 @@
 import { Agent, CredentialSession } from '@atproto/api';
-import {
-  getDailyPostsFromFollows,
-  retrieveAuthorFeedGenerator,
-  retrieveFollowsGenerator,
-  uriToUrl,
-  type DailyPostsFromFollowsResponse,
-} from 'bsky-tldr';
+import { retrieveAuthorFeed, retrieveFollows, uriToUrl } from 'bsky-tldr';
 import 'dotenv/config';
 import { isCacheFresh, retrieveFromCache, saveToCache } from './cache';
 
@@ -83,31 +77,30 @@ export async function retrievePosts(
     throw new Error('Bluesky Login failed');
   }
 
-  const response: DailyPostsFromFollowsResponse =
-    await getDailyPostsFromFollows({
-      bluesky,
-      sourceActor,
-      targetDate,
-      timezoneOffset: parseInt(timezoneOffset, 10),
-      retrieveFollows: retrieveFollowsGenerator,
-      retrieveAuthorFeed: retrieveAuthorFeedGenerator,
-    });
-
-  const follows = response.follows;
-
-  // build an array of all posts, not focused on author
   const dailyPosts: StandalonePost[] = [];
-  for (const authorDid in follows) {
-    const posts = follows[authorDid].posts;
-    for (const post of posts) {
-      dailyPosts.push({
+
+  for await (const follow of retrieveFollows({
+    bluesky,
+    actor: sourceActor,
+  })) {
+    const posts: StandalonePost[] = [];
+
+    for await (const post of retrieveAuthorFeed({
+      bluesky,
+      actor: follow.did,
+      targetDate: targetDate,
+      timezoneOffset: parseInt(timezoneOffset, 10),
+    })) {
+      posts.push({
         urlToOriginalPost: uriToUrl(post.uri) || '',
-        authorWhoPostedOrReposted: authorDid,
+        authorWhoPostedOrReposted: follow.did,
         content: post.content,
         links: post.links,
         didAuthorRepost: post.isRepost,
       });
     }
+
+    dailyPosts.push(...posts);
   }
 
   saveToCache(yyyymmdd, JSON.stringify(dailyPosts, null, 2));
