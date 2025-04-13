@@ -1,15 +1,7 @@
 import { Agent, CredentialSession } from '@atproto/api';
-import {
-  getDailyPostsFromFollows,
-  retrieveAuthorFeedGenerator,
-  retrieveFollowsGenerator,
-  uriToUrl,
-  type DailyPostsFromFollowsResponse,
-} from 'bsky-tldr';
+import { retrieveAuthorFeed, retrieveFollows, uriToUrl } from 'bsky-tldr';
 import 'dotenv/config';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { isCacheFresh, retrieveFromCache, saveToCache } from './cache';
 
 type MCPResource = {
   name: string;
@@ -47,39 +39,6 @@ export function dailyPostsResources(today: Date): MCPResource[] {
   return resources;
 }
 
-// Get the current file's directory path (equivalent to __dirname in CommonJS)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-/**
- * Get the cache file path for a given date
- */
-function getCacheFilePath(yyyymmdd: string): string {
-  const cacheDir = path.join(__dirname, '..', '..', '.cache');
-
-  // Create cache directory if it doesn't exist
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir, { recursive: true });
-  }
-
-  return path.join(cacheDir, `${yyyymmdd}.json`);
-}
-
-/**
- * Check if the cache file exists and is fresh (less than 24 hours old)
- */
-function isCacheFresh(filePath: string): boolean {
-  if (!fs.existsSync(filePath)) {
-    return false;
-  }
-
-  const stats = fs.statSync(filePath);
-  const fileAge = Date.now() - stats.mtimeMs;
-  const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
-  return fileAge < maxAge;
-}
-
 /**
  * Retrieve posts from Bluesky for a given date, with caching
  */
@@ -90,11 +49,8 @@ export async function retrievePosts(
     throw new Error('array of yyyymmdd not yet supported');
   }
 
-  const cacheFilePath = getCacheFilePath(yyyymmdd);
-
-  // Check if we have a fresh cache
-  if (isCacheFresh(cacheFilePath)) {
-    const cachedData = fs.readFileSync(cacheFilePath, 'utf-8');
+  if (isCacheFresh(yyyymmdd)) {
+    const cachedData = retrieveFromCache(yyyymmdd);
     return JSON.parse(cachedData);
   }
 
@@ -121,35 +77,33 @@ export async function retrievePosts(
     throw new Error('Bluesky Login failed');
   }
 
-  const response: DailyPostsFromFollowsResponse =
-    await getDailyPostsFromFollows({
-      bluesky,
-      sourceActor,
-      targetDate,
-      timezoneOffset: parseInt(timezoneOffset, 10),
-      retrieveFollows: retrieveFollowsGenerator,
-      retrieveAuthorFeed: retrieveAuthorFeedGenerator,
-    });
-
-  const follows = response.follows;
-
-  // build an array of all posts, not focused on author
   const dailyPosts: StandalonePost[] = [];
-  for (const authorDid in follows) {
-    const posts = follows[authorDid].posts;
-    for (const post of posts) {
-      dailyPosts.push({
+
+  for await (const follow of retrieveFollows({
+    bluesky,
+    actor: sourceActor,
+  })) {
+    const posts: StandalonePost[] = [];
+
+    for await (const post of retrieveAuthorFeed({
+      bluesky,
+      actor: follow.did,
+      targetDate: targetDate,
+      timezoneOffset: parseInt(timezoneOffset, 10),
+    })) {
+      posts.push({
         urlToOriginalPost: uriToUrl(post.uri) || '',
-        authorWhoPostedOrReposted: authorDid,
+        authorWhoPostedOrReposted: follow.did,
         content: post.content,
         links: post.links,
         didAuthorRepost: post.isRepost,
       });
     }
+
+    dailyPosts.push(...posts);
   }
 
-  // Cache the results
-  fs.writeFileSync(cacheFilePath, JSON.stringify(dailyPosts, null, 2));
+  saveToCache(yyyymmdd, JSON.stringify(dailyPosts, null, 2));
 
   return dailyPosts;
 }
