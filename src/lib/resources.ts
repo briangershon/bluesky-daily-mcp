@@ -7,9 +7,12 @@ import {
   type DailyPostsFromFollowsResponse,
 } from 'bsky-tldr';
 import 'dotenv/config';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import {
+  getCacheFilePath,
+  isCacheFresh,
+  retrieveFromCache,
+  saveToCache,
+} from './cache';
 
 type MCPResource = {
   name: string;
@@ -47,39 +50,6 @@ export function dailyPostsResources(today: Date): MCPResource[] {
   return resources;
 }
 
-// Get the current file's directory path (equivalent to __dirname in CommonJS)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-/**
- * Get the cache file path for a given date
- */
-function getCacheFilePath(yyyymmdd: string): string {
-  const cacheDir = path.join(__dirname, '..', '..', '.cache');
-
-  // Create cache directory if it doesn't exist
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir, { recursive: true });
-  }
-
-  return path.join(cacheDir, `${yyyymmdd}.json`);
-}
-
-/**
- * Check if the cache file exists and is fresh (less than 24 hours old)
- */
-function isCacheFresh(filePath: string): boolean {
-  if (!fs.existsSync(filePath)) {
-    return false;
-  }
-
-  const stats = fs.statSync(filePath);
-  const fileAge = Date.now() - stats.mtimeMs;
-  const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
-  return fileAge < maxAge;
-}
-
 /**
  * Retrieve posts from Bluesky for a given date, with caching
  */
@@ -92,9 +62,8 @@ export async function retrievePosts(
 
   const cacheFilePath = getCacheFilePath(yyyymmdd);
 
-  // Check if we have a fresh cache
   if (isCacheFresh(cacheFilePath)) {
-    const cachedData = fs.readFileSync(cacheFilePath, 'utf-8');
+    const cachedData = retrieveFromCache(cacheFilePath, yyyymmdd);
     return JSON.parse(cachedData);
   }
 
@@ -148,8 +117,7 @@ export async function retrievePosts(
     }
   }
 
-  // Cache the results
-  fs.writeFileSync(cacheFilePath, JSON.stringify(dailyPosts, null, 2));
+  saveToCache(cacheFilePath, JSON.stringify(dailyPosts, null, 2));
 
   return dailyPosts;
 }
