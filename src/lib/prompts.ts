@@ -23,6 +23,11 @@ export const prompts: Record<string, Prompt> = {
     - Summarize key topics and include details so it is not generic
     - Explain which posts were part of each topic
     - urlToOriginalPost is a Bluesky post is in the format of "https://bsky.app/profile/did:plc:<DID>/post/<postId>". Do not modify, shorten, or split urlToOriginalPost links in any way. Treat the 'did:plc' component of links as an essential part of the URL that must be preserved intact. When sharing links, always verify that the full URL is visible and clickable. Links should always be on one line.
+    - authorIdentifier is the did of the author
+    - authorNameOrHandle is the author's handle
+    - content is the content of the post
+    - links is an array of URLs in the post
+    - isRepost is false if it is an original post or true if it is a re-post
     - Annotate each summary with urlToOriginalPost
     
     Most Interesting (prioritize posts that have content with URLs or software development):
@@ -39,6 +44,6 @@ export const prompts: Record<string, Prompt> = {
   [PROMPT_SUMMARIZE_AUTHORS_POSTS]: {
     description: "Summarize each author's posts and group by author",
     prompt:
-      "Group posts by Author and then summarize each author's posts. Show post count, and a summary of their posts. Include the most interesting posts and any notable themes or topics. Provide a markdown summary with links to the original posts. For authors, show link to their profile on Bluesky.",
+      "Group posts by Author and then summarize each author's posts. Show post count, and a summary of their posts. Include the most interesting posts and any notable themes or topics. Provide a markdown summary with links to the original posts. For authors, show their handle from 'authorNameOrHandle' and a link to their profile using 'authorIdentifier' on Bluesky.",
   },
 };
