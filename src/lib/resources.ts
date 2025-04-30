@@ -13,10 +13,11 @@ type MCPResource = {
 // these attributes are named to be meaningful to the LLM model
 type StandalonePost = {
   urlToOriginalPost: string;
-  authorWhoPostedOrReposted: string;
+  authorIdentifier: string;
+  authorNameOrHandle: string;
   content: string;
   links: string[];
-  didAuthorRepost: boolean;
+  isRepost: boolean;
 };
 
 export const dailyPostsResourcesTemplateUri = 'blueskydaily://posts/{yyyymmdd}';
@@ -93,10 +94,11 @@ export async function retrievePosts(
     })) {
       posts.push({
         urlToOriginalPost: uriToUrl(post.uri) || '',
-        authorWhoPostedOrReposted: follow.did,
+        authorIdentifier: follow.did,
+        authorNameOrHandle: follow.handle,
         content: post.content,
         links: post.links,
-        didAuthorRepost: post.isRepost,
+        isRepost: post.isRepost,
       });
     }
 

@@ -10,18 +10,19 @@ For examples of how to use, please visit ["Building an MCP Server to Explore My 
 - sample prompts for analyzing posts
 - caches the posts for a given day
 
-Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) npm package which normalizes them into this format for easy consumption by LLM:
+Follows and Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) npm package which both (a) shaves down infomation to just the key fields, and (b) ensures posts are efficiently retrieved for only the day requested.
 
-```json
-[
-  {
-    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3lh4unyelgs2i",
-    "content": "There are some missing details in this report claiming to have leaked the system prompt - most notably they don't clarify if they got the system prompt for DeepSeek v3 or DeepSeek R1 (I'm interred in R1) lab.wallarm.com/jailbreaking...",
-    "createdAt": "2025-02-01T15:53:09.612Z",
-    "isRepost": false,
-    "links": ["https://lab.wallarm.com/jailbreaking-generative-ai/"]
-  }
-]
+In this MCP Server, we add more descriptive field names and combine author and post information together for easy consumption by the LLM:
+
+```typescript
+type StandalonePost = {
+  urlToOriginalPost: string;
+  authorIdentifier: string;
+  authorNameOrHandle: string;
+  content: string;
+  links: string[];
+  isRepost: boolean;
+};
 ```
 
 <img src="https://github.com/briangershon/bluesky-daily-mcp/blob/main/screenshots/visual-summary-of-bluesky-posts.jpg?raw=true" width="600" height="600" alt="Visual Summary of Bluesky Posts" />
@@ -29,6 +30,8 @@ Posts are retrieved via [`bsky-tldr`](https://www.npmjs.com/package/bsky-tldr) n
 ## Limitations
 
 - This retrieves all posts from your follows for a given day. This will become large and subsequently you'll lose posts that are truncated by the MCP Client or the LLM's context window. Will need additional strategies to handle this.
+
+- You'll run into Bluesky API rate limits and/or timeouts if you try to retrieve posts from historic dates, say weeks or months ago. `bsky-tldr` package is smart enough to stop retrieving posts older than the day requested, but does need to retrieve all the newer ones on its way to the historic date.
 
 ## Installation
 
